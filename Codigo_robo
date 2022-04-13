@@ -1,0 +1,144 @@
+#include <MPU6050_tockn.h>
+#include <Wire.h>
+
+MPU6050 mpu6050(Wire);
+
+//Definicoes pinos Arduino ligados a entrada da Ponte H
+int IN1 = 4;
+int IN2 = 5;
+int IN3 = 6;
+int IN4 = 7;
+
+
+//pinagem do PWM
+int velocidadeA = 10;
+int velocidadeB = 11;
+
+//velocidade do PWM
+int velocidade = 150;
+
+
+
+// FAIXAS DE VALORES DO GIROSCOPIO
+// Para Frente
+int AnguloXinic = 0 ;
+int AnguloYinic = 0;
+
+int AnguloXinicMin = 0;
+int AnguloXinicMax = 0;
+
+int AnguloX = 0 ;
+int AnguloY = 0;
+
+int AnguloYinicMin = 0 ;
+int AnguloYinicMax = 0;
+
+void setup() {
+  Serial.begin(9600);
+  Wire.begin();
+  mpu6050.begin();
+  mpu6050.calcGyroOffsets(true);
+
+  //Define os pinos como saida
+  pinMode(IN1, OUTPUT);
+  pinMode(IN2, OUTPUT);
+  pinMode(IN3, OUTPUT);
+  pinMode(IN4, OUTPUT);
+  pinMode(velocidadeA, OUTPUT);
+  pinMode(velocidadeB, OUTPUT);
+}
+
+void loop() {
+
+
+
+    mpu6050.update();
+ if (AnguloXinic == 0 &&  AnguloYinic == 0){
+    AnguloXinic = mpu6050.getAngleX();
+    AnguloYinic = mpu6050.getAngleY();
+    
+    AnguloXinicMin = AnguloXinic - (5);
+    AnguloXinicMax = AnguloXinic + (14);
+  
+    AnguloYinicMin = AnguloYinic - (7);
+    AnguloYinicMax = AnguloYinic + (7);
+  
+ }
+  
+  AnguloX = mpu6050.getAngleX();
+  AnguloY = mpu6050.getAngleY();
+    
+  Serial.print("angleX : ");
+  Serial.print(AnguloX);
+  
+  Serial.print("\tangleY : ");
+  Serial.print(AnguloY);
+ 
+
+  Serial.print("\tangleXinic : ");
+  Serial.print(AnguloXinic);
+
+  Serial.print("\tangleYinic : ");
+  Serial.print(AnguloYinic);
+
+ 
+  Serial.print("\tAnguloYinicMin : ");
+  Serial.print(AnguloYinicMin);
+
+  Serial.print("\tAnguloYinicMax : ");
+  Serial.println(AnguloYinicMax);
+
+
+//73  - direita aumenta - esquerda diminui
+
+     if  ( AnguloY > AnguloYinicMax && AnguloX > AnguloXinicMin && AnguloX < AnguloXinicMax ){
+      Serial.print("----- DIRIETA -------- ");
+      digitalWrite(IN1, HIGH);//GIRA NO ANTIHORARIO *LOW
+      digitalWrite(IN2, HIGH);
+      digitalWrite(IN3, HIGH); //GIRA NO ANTIHORARIO
+      digitalWrite(IN4, LOW); //
+      analogWrite(velocidadeA,velocidade);
+      analogWrite(velocidadeB,velocidade);
+    }
+
+   else if  ( AnguloY < AnguloYinicMin && AnguloX > AnguloXinicMin && AnguloX < AnguloXinicMax ){
+      Serial.print("----- ESQUERDA -------- ");
+      digitalWrite(IN1, HIGH);//GIRA NO ANTIHORARIO
+      digitalWrite(IN2, LOW);
+      digitalWrite(IN3, HIGH); //GIRA NO ANTIHORARIO * 
+      digitalWrite(IN4, HIGH);
+      analogWrite(velocidadeA,velocidade);
+      analogWrite(velocidadeB,velocidade);
+    }
+
+
+   else if (AnguloX <  AnguloXinicMin  && AnguloY > AnguloYinicMin && AnguloY < AnguloYinicMax){
+      Serial.print("----- FRENTE -------- ");
+      digitalWrite(IN1, HIGH);//GIRA NO HORARIO
+      digitalWrite(IN2, LOW);
+      digitalWrite(IN3, HIGH); //GIRA NO HORARIO
+      digitalWrite(IN4, LOW);
+      analogWrite(velocidadeA,velocidade);
+      analogWrite(velocidadeB,velocidade);
+    }
+
+    else if  (AnguloX >  AnguloXinicMax  && AnguloY > AnguloYinicMin && AnguloY < AnguloYinicMax){
+      Serial.print("----- TRAS    -------- ");
+      digitalWrite(IN1, LOW);//GIRA NO ANTIHORARIO
+      digitalWrite(IN2, HIGH);
+      digitalWrite(IN3, LOW); //GIRA NO ANTIHORARIO
+      digitalWrite(IN4, HIGH);
+      analogWrite(velocidadeA,velocidade);
+      analogWrite(velocidadeB,velocidade);
+      
+    }else{
+      Serial.print("----- INICIO -------- ");
+      digitalWrite(IN1, HIGH);
+      digitalWrite(IN2, HIGH);
+      digitalWrite(IN3, HIGH); 
+      digitalWrite(IN4, HIGH);
+      analogWrite(velocidadeA,velocidade);
+      analogWrite(velocidadeB,velocidade); 
+    }
+    
+}    
